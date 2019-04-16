@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "CommandLineInterface/CLIcore.h"
-#include "CLIcore.h"
+
 #include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_arith/COREMOD_arith.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -49,7 +49,7 @@ void __attribute__ ((constructor)) libinit_WFpropagate()
 	if( INITSTATUS_WFpropagate == 0)
 	{
 		init_WFpropagate();
-		RegisterModule(__FILE__, "cacao", "Wavefront propagate");
+		RegisterModule(__FILE__, "cacao-opt", "Wavefront propagate");
 		INITSTATUS_WFpropagate = 1;
 	}
 }
