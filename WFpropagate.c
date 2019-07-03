@@ -100,7 +100,7 @@ int Fresnel_propagate_wavefront(char *in, char *out, double PUPIL_SCALE, double 
     do2dfft(in, "tmp");
     permut("tmp");
     ID = image_ID("tmp");
-    atype = data.image[ID].md[0].atype;
+    atype = data.image[ID].md[0].datatype;
 
 
 
@@ -300,7 +300,7 @@ int Fresnel_propagate_wavefront1(char *in, char *out, char *Cin)
     ID = image_ID(in);
     sizein = data.image[ID].md[0].size[0];
     sprintf(fname,"tmpfpw%ld", sizein);
-    atype = data.image[ID].md[0].atype;
+    atype = data.image[ID].md[0].datatype;
 
     do2dfft(in,fname);
 
@@ -364,7 +364,7 @@ long Fresnel_propagate_cube(char *IDcin_name, char *IDout_name_amp, char *IDout_
     IDcin = image_ID(IDcin_name);
     xsize = data.image[IDcin].md[0].size[0];
     ysize = data.image[IDcin].md[0].size[1];
-    atype = data.image[IDcin].md[0].atype;
+    atype = data.image[IDcin].md[0].datatype;
 
     if(atype == _DATATYPE_COMPLEX_FLOAT)
     {
