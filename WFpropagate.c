@@ -1,3 +1,33 @@
+/**
+ * @file    WFpropagate.c
+ * @brief   Optical propagation of wavefronts
+ */ 
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            MODULE INFO                                             */
+/* ================================================================== */
+/* ================================================================== */
+
+// module default short name
+// all CLI calls to this module functions will be <shortname>.<funcname>
+// if set to "", then calls use <funcname>
+#define MODULE_SHORTNAME_DEFAULT "wfprop"
+
+// Module short description
+#define MODULE_DESCRIPTION       "Optical propagation of wavefronts"
+
+
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            DEPENDANCIES                                            */
+/* ================================================================== */
+/* ================================================================== */
+
 #include <fitsio.h> 
 #include <string.h>
 #include <stdio.h>
@@ -17,52 +47,84 @@
 
 #include "WFpropagate/WFpropagate.h"
 
-
-
-//extern DATA data;
-
 #define SBUFFERSIZE 2000
 
 
-static int INITSTATUS_WFpropagate = 0;
+
+/* ================================================================== */
+/* ================================================================== */
+/*            GLOBAL VARIABLES                                        */
+/* ================================================================== */
+/* ================================================================== */
 
 
 
 
 
-int_fast8_t Fresnel_propagate_wavefront_cli()
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            INITIALIZE LIBRARY                                      */
+/* ================================================================== */
+/* ================================================================== */
+
+// Module initialization macro in CLIcore.h
+// macro argument defines module name for bindings
+//
+INIT_MODULE_LIB(WFpropagate)
+
+
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            COMMAND LINE INTERFACE (CLI) FUNCTIONS                  */
+/* ================================================================== */
+/* ================================================================== */
+
+
+
+static errno_t Fresnel_propagate_wavefront__cli()
 {
 
-  if(CLI_checkarg(1, 4)+CLI_checkarg(2, 3)+CLI_checkarg(3, 1)+CLI_checkarg(4, 1)+CLI_checkarg(5, 1)==0)
+    if(0
+            + CLI_checkarg(1, CLIARG_IMG)
+            + CLI_checkarg(2, CLIARG_STR_NOT_IMG)
+            + CLI_checkarg(3, CLIARG_FLOAT)
+            + CLI_checkarg(4, CLIARG_FLOAT)
+            + CLI_checkarg(5, CLIARG_FLOAT)
+            == 0)
     {
-      Fresnel_propagate_wavefront(data.cmdargtoken[1].val.string, data.cmdargtoken[2].val.string, data.cmdargtoken[3].val.numf, data.cmdargtoken[4].val.numf, data.cmdargtoken[5].val.numf);
-      return 0;
+        Fresnel_propagate_wavefront(
+            data.cmdargtoken[1].val.string,
+            data.cmdargtoken[2].val.string,
+            data.cmdargtoken[3].val.numf,
+            data.cmdargtoken[4].val.numf,
+            data.cmdargtoken[5].val.numf);
+
+        return CLICMD_SUCCESS;
     }
-  else
-    return 1;
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
 }
 
 
 
 
-void __attribute__ ((constructor)) libinit_WFpropagate()
+
+
+static errno_t init_module_CLI()
 {
-	if( INITSTATUS_WFpropagate == 0)
-	{
-		init_WFpropagate();
-		RegisterModule(__FILE__, "cacao-opt", "Wavefront propagate");
-		INITSTATUS_WFpropagate = 1;
-	}
-}
-
-
-
-int init_WFpropagate()
-{
+	
     RegisterCLIcommand(
 		"fresnelpw",
 		__FILE__, 
-		Fresnel_propagate_wavefront_cli, 
+		Fresnel_propagate_wavefront__cli, 
 		"Fresnel propagate WF", 
 		"<input image> <output image> <pupil scale m/s> <prop dist> <lambda>", 
 		"fresnelpw in out 0.01 1000 0.0000005", 
@@ -82,19 +144,24 @@ int init_WFpropagate()
 
 
 
-int Fresnel_propagate_wavefront(char *in, char *out, double PUPIL_SCALE, double z, double lambda)
+int Fresnel_propagate_wavefront(
+    char *in,
+    char *out,
+    double PUPIL_SCALE,
+    double z,
+    double lambda)
 {
     /* all units are in m */
     double coeff;
-    long ii,jj,ii1,jj1;
+    long ii, jj, ii1, jj1;
     long naxes[2];
     long ID;
     double sqdist;
     double re, im;
     double angle;
     double co1;
-    long ii2,jj2;
-    long n0h,n1h;
+    long ii2, jj2;
+    long n0h, n1h;
     int atype;
 
 
@@ -109,60 +176,60 @@ int Fresnel_propagate_wavefront(char *in, char *out, double PUPIL_SCALE, double 
 
     naxes[0] = data.image[ID].md[0].size[0];
     naxes[1] = data.image[ID].md[0].size[1];
-    coeff = PI*z*lambda/(PUPIL_SCALE*naxes[0])/(PUPIL_SCALE*naxes[0]);
+    coeff = PI * z * lambda / (PUPIL_SCALE * naxes[0]) / (PUPIL_SCALE * naxes[0]);
 
-    co1 = 1.0*naxes[0]*naxes[1];
-    n0h = naxes[0]/2;
-    n1h = naxes[1]/2;
+    co1 = 1.0 * naxes[0] * naxes[1];
+    n0h = naxes[0] / 2;
+    n1h = naxes[1] / 2;
 
 
 //	printf("coeff = %g     co1 = %g\n", coeff, co1);
 
     if(atype == _DATATYPE_COMPLEX_FLOAT)
     {
-        for(jj=0; jj<naxes[1]; jj++)
+        for(jj = 0; jj < naxes[1]; jj++)
         {
-            jj1 = naxes[0]*jj;
-            jj2 = (jj-naxes[1]/2)*(jj-naxes[1]/2);
-            for(ii=0; ii<naxes[0]; ii++)
+            jj1 = naxes[0] * jj;
+            jj2 = (jj - naxes[1] / 2) * (jj - naxes[1] / 2);
+            for(ii = 0; ii < naxes[0]; ii++)
             {
-                ii1 = jj1+ii;
-                ii2 = ii-n0h;
-                sqdist = ii2*ii2+jj2;
-                angle = -coeff*sqdist;
-                re = data.image[ID].array.CF[ii1].re/co1;
-                im = data.image[ID].array.CF[ii1].im/co1;
-                data.image[ID].array.CF[ii1].re = re*cos(angle) - im*sin(angle);
-                data.image[ID].array.CF[ii1].im = re*sin(angle) + im*cos(angle);
+                ii1 = jj1 + ii;
+                ii2 = ii - n0h;
+                sqdist = ii2 * ii2 + jj2;
+                angle = -coeff * sqdist;
+                re = data.image[ID].array.CF[ii1].re / co1;
+                im = data.image[ID].array.CF[ii1].im / co1;
+                data.image[ID].array.CF[ii1].re = re * cos(angle) - im * sin(angle);
+                data.image[ID].array.CF[ii1].im = re * sin(angle) + im * cos(angle);
             }
         }
     }
     else
     {
-        for(jj=0; jj<naxes[1]; jj++)
+        for(jj = 0; jj < naxes[1]; jj++)
         {
-            jj1 = naxes[0]*jj;
-            jj2 = (jj-naxes[1]/2)*(jj-naxes[1]/2);
-            for(ii=0; ii<naxes[0]; ii++)
+            jj1 = naxes[0] * jj;
+            jj2 = (jj - naxes[1] / 2) * (jj - naxes[1] / 2);
+            for(ii = 0; ii < naxes[0]; ii++)
             {
-                ii1 = jj1+ii;
-                ii2 = ii-n0h;
-                sqdist = ii2*ii2+jj2;
-                angle = -coeff*sqdist;
-                re = data.image[ID].array.CD[ii1].re/co1;
-                im = data.image[ID].array.CD[ii1].im/co1;
-                data.image[ID].array.CD[ii1].re = re*cos(angle) - im*sin(angle);
-                data.image[ID].array.CD[ii1].im = re*sin(angle) + im*cos(angle);
+                ii1 = jj1 + ii;
+                ii2 = ii - n0h;
+                sqdist = ii2 * ii2 + jj2;
+                angle = -coeff * sqdist;
+                re = data.image[ID].array.CD[ii1].re / co1;
+                im = data.image[ID].array.CD[ii1].im / co1;
+                data.image[ID].array.CD[ii1].re = re * cos(angle) - im * sin(angle);
+                data.image[ID].array.CD[ii1].im = re * sin(angle) + im * cos(angle);
             }
         }
     }
-    
+
     permut("tmp");
-	
-    
+
+
     do2dffti("tmp", out);
-    
-   
+
+
     delete_image_ID("tmp");
 
     return(0);
